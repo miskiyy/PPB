@@ -3,45 +3,35 @@ package com.example.mvvm
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.runtime.LaunchedEffect
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.mvvm.data.local.database.AppDatabase
+import com.example.mvvm.data.repository.UserRepository
+import com.example.mvvm.ui.screen.LoginScreen
 import com.example.mvvm.ui.theme.MVVMTheme
+import com.example.mvvm.viewmodel.LoginViewModel
+import com.example.mvvm.viewmodel.LoginViewModelFactory
 
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+
+        val database = AppDatabase.getDatabase(this)
+        val repository = UserRepository(database.userDao())
+        val factory = LoginViewModelFactory(repository)
+
         setContent {
             MVVMTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                // Corrected: factory = factory (bukan factory factory)
+                val viewModel: LoginViewModel = viewModel(factory = factory)
+
+                LaunchedEffect(Unit) {
+                    viewModel.insertDummyUser()
                 }
+
+                LoginScreen(viewModel)
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    MVVMTheme {
-        Greeting("Android")
     }
 }
